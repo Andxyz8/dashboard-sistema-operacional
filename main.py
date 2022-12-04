@@ -1,34 +1,36 @@
-# Run this app with `python app.py` and
-# visit http://127.0.0.1:8050/ in your web browser.
+# -*- coding: utf-8 -*-
+from dash import Dash, dcc, html
+from dash.dependencies import Input, Output, State
+import subprocess, os
 
-from dash import Dash, html, dcc
-import plotly.express as px
-import pandas as pd
+external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
 
-app = Dash(__name__)
+app = Dash(__name__, external_stylesheets=external_stylesheets)
 
-# assume you have a "long-form" data frame
-# see https://plotly.com/python/px-arguments/ for more options
-df = pd.DataFrame({
-    "Fruit": ["Apples", "Oranges", "Bananas", "Apples", "Oranges", "Bananas"],
-    "Amount": [4, 1, 2, 2, 4, 5],
-    "City": ["SF", "SF", "SF", "Montreal", "Montreal", "Montreal"]
-})
-
-fig = px.bar(df, x="Fruit", y="Amount", color="City", barmode="group")
-
-app.layout = html.Div(children=[
-    html.H1(children='Hello Dash'),
-
-    html.Div(children='''
-        Dash: A web application framework for your data.
-    '''),
-
-    dcc.Graph(
-        id='example-graph',
-        figure=fig
-    )
+app.layout = html.Div([
+    html.Button(id='submit-button-state', n_clicks=0, children='Sistema (hardware e SO)'),
+    html.Button(id='submit-button-state', n_clicks=0, children='Processos/Threads'),
+    html.Button(id='submit-button-state', n_clicks=0, children='Sistemas de Arquivos'),
+    html.Button(id='submit-button-state', n_clicks=0, children='Memória'),
+    html.Button(id='submit-button-state', n_clicks=0, children='Terminal'),
+    html.Div(id='output-state')
 ])
+
+
+@app.callback(Output('output-state', 'children'),
+              Input('submit-button-state', 'n_clicks'),
+              State('input-1-state', 'value'),
+              State('input-2-state', 'value'))
+              
+            
+def update_output(n_clicks, input1, input2):
+    
+    return u'''
+        The Button has been pressed {} times,
+        Input 1 is " {} ",
+        and Input 2 is "{}"
+    '''.format(n_clicks, input1, input2)
+
 
 if __name__ == '__main__':
     app.run_server(debug=True)
