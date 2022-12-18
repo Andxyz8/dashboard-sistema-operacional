@@ -19,7 +19,7 @@ app.layout = html.Div([
         html.A(
             href='/',
             children=html.Button(
-                id='submit-button-state',
+                id='botao-inicio',
                 n_clicks=0,
                 children='Início',
             ),
@@ -28,7 +28,7 @@ app.layout = html.Div([
         html.A(
             href='/apps/sistema_hardware.py',
             children=html.Button(
-                id='submit-button-state',
+                id='botao-sistema-hardware',
                 n_clicks=0,
                 children='Sistema (hardware e SO)',
             ),
@@ -37,7 +37,7 @@ app.layout = html.Div([
         html.A(
             href='/apps/processos_threads.py',
             children=html.Button(
-                id='submit-button-state',
+                id='botao-processos-threads',
                 n_clicks=0,
                 children='Processos/Threads',
             ),
@@ -46,7 +46,7 @@ app.layout = html.Div([
         html.A(
             href='/apps/sistema_arquivos.py',
             children=html.Button(
-                id='submit-button-state',
+                id='botao-sistema-arquivos',
                 n_clicks=0,
                 children='Sistemas de Arquivos',
             ),
@@ -55,7 +55,7 @@ app.layout = html.Div([
         html.A(
             href='/apps/infos_memoria.py',
             children=html.Button(
-                id='submit-button-state',
+                id='botao-infos-memoria',
                 n_clicks=0,
                 children='Memória',
             ),
@@ -64,7 +64,7 @@ app.layout = html.Div([
         html.A(
             href='/apps/terminal.py',
             children=html.Button(
-                id='submit-button-state',
+                id='botao-terminal',
                 n_clicks=0,
                 children='Terminal',
             ),

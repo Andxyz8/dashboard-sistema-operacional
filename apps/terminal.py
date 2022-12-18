@@ -4,15 +4,21 @@ from dash.dependencies import Input, Output, State
 import subprocess
 
 
-def funcao(comando):
-    qualquer = subprocess.run(comando, text=True, capture_output=True)
+def executa_comando_terminal(comando):
+    comando_executado = subprocess.run(
+        args=comando,
+        shell=True,
+        capture_output=True,
+        universal_newlines=True
+    )
+    print(comando_executado.stdout)
+    return comando_executado.stdout
 
-    return str(qualquer.stdout)
 
-comando = ''
-
-layout = html.Div([
-        html.Div([
+layout = html.Div(
+    [
+        html.Div(
+            [
                 html.Hr(),
                 html.Center(
                     html.H1('Terminal'),
@@ -21,37 +27,43 @@ layout = html.Div([
             ],
             className='div-terminal-titulo',
         ),
-        html.Div([
+        html.Div(
+            [
                 html.Div(
-                    html.Textarea(
-                        id='comando-executar',
-                        children='ls',
+                    dcc.Input(
+                        id='input-comando',
+                        value='',
+                        type='text',
+                        debounce=True,
                         autoFocus=True,
                         className='terminal-textArea',
                     ),
-                    className='terminal-div-textArea',
+                    className='terminal-div-input',
                 ),
                 html.Div(
                     children = [
                         html.Button(
                             'Executar',
                             id='execute-button',
-                            n_clicks=0,
-                            type='submit',
-                            className='terminal-botaoExecutar',
+                            className='terminal-botao-executar',
                         ),
                     ],
-                    className='terminal-div-botaoExecutar',
+                    className='terminal-div-botao-executar',
                 ),
             ],
         ),
         html.Div(
-            id='div-area-retorno',
-            children=[
-                funcao('pwd')
+            [
+                dcc.Textarea(
+                    id='text-area-retorno',
+                    value='',
+                    disabled='true',
+                    className='terminal-area-retorno',
+                ),
+                
             ],
-            className='terminal-area-retorno',
-        ),
+            className='terminal-div-retorno',
+        )
     ],
     className='terminal-div-viewport'
 )
@@ -59,21 +71,24 @@ layout = html.Div([
 
 # add a click to the appropriate store.
 @app.callback(
-    Output(
-        component_id='div-area-retorno', 
-        component_property='children'
-    ),
+    [
+        Output(
+            component_id='text-area-retorno', 
+            component_property='value'
+        ),
+        Output(
+            component_id='input-comando', 
+            component_property='value'
+        ),
+    ],
     [
         Input(
-            component_id='comando-executar', 
-            component_property='children'
+            component_id='input-comando', 
+            component_property='value'
         )
     ]
-    ,
-    State(
-        component_id='execute-button',
-        component_property='n_clicks'
-    )
 )
-def on_click(comando, n_clicks_botao):
-    return funcao(comando)
+def on_click(comando):
+    if (not comando == ''):
+        return executa_comando_terminal(comando), ''
+    return '', ''
