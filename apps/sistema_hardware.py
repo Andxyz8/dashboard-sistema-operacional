@@ -5,7 +5,7 @@ def funcao():
     pass
 
 layout = html.Div([
-    html.P('Testando pra ver se essa bagaça funciona'),
+    html.P(funcao()),
     html.Br(),
     html.P('Na tela do Sistema Hardware e SO'),
 ])

@@ -1,6 +1,7 @@
 # Importanto página inicial do dash
 from app import app
 from app import server
+from app import primeira_vez
 
 # Importando as páginas
 from apps import sistema_hardware
@@ -22,6 +23,7 @@ app.layout = html.Div([
                 n_clicks=0,
                 children='Início',
             ),
+            className='horizontal-divider',
         ),
         html.A(
             href='/apps/sistema_hardware.py',
@@ -30,6 +32,7 @@ app.layout = html.Div([
                 n_clicks=0,
                 children='Sistema (hardware e SO)',
             ),
+            className='horizontal-divider',
         ),
         html.A(
             href='/apps/processos_threads.py',
@@ -38,6 +41,7 @@ app.layout = html.Div([
                 n_clicks=0,
                 children='Processos/Threads',
             ),
+            className='horizontal-divider',
         ),
         html.A(
             href='/apps/sistema_arquivos.py',
@@ -46,6 +50,7 @@ app.layout = html.Div([
                 n_clicks=0,
                 children='Sistemas de Arquivos',
             ),
+            className='horizontal-divider',
         ),
         html.A(
             href='/apps/infos_memoria.py',
@@ -54,6 +59,7 @@ app.layout = html.Div([
                 n_clicks=0,
                 children='Memória',
             ),
+            className='horizontal-divider',
         ),
         html.A(
             href='/apps/terminal.py',
@@ -62,6 +68,7 @@ app.layout = html.Div([
                 n_clicks=0,
                 children='Terminal',
             ),
+            className='horizontal-divider',
         ),
         html.Div(id='page-content', children=[])
     ],
@@ -83,26 +90,26 @@ app.layout = html.Div([
 )
 def update_output(pathname):
     if(pathname == '/apps/sistema_hardware.py'):
-        app.primeira_vez = True
+        app.primeira_vez = False
         return sistema_hardware.layout
 
     if(pathname == '/apps/processos_threads.py'):
-        app.primeira_vez = True
+        app.primeira_vez = False
         return processos_threads.layout
 
     if(pathname == '/apps/sistema_arquivos.py'):
-        app.primeira_vez = True
+        app.primeira_vez = False
         return sistema_arquivos.layout
 
     if(pathname == '/apps/infos_memoria.py'):
-        app.primeira_vez = True
+        app.primeira_vez = False
         return infos_memoria.layout
 
     if(pathname == '/apps/terminal.py'):
-        app.primeira_vez = True
+        app.primeira_vez = False
         return terminal.layout
         
-    if(pathname == '/' and app.primeira_vez == False):
+    if(pathname == '/' and primeira_vez == False):
         app.primeira_vez = True
         return app.layout
 
