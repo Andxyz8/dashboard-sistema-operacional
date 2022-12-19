@@ -16,8 +16,8 @@
 }
 
 body {
-  background-color: #1e2130;
-  color: #f3f5f4;
+  background-color: #918a94;
+  color: black;
   font-family: "Open Sans", sans-serif;
   width: 100%;
   height: 100vh;
@@ -36,13 +36,13 @@ body {
 
 .banner {
   height: fit-content;
-  background-color: #1e2130;
+  background-color: #918a94;
   display: flex;
   flex-direction: row;
   align-items: center;
   justify-content: space-between;
-  border-bottom: 1px solid #4B5460;
-  padding: 1rem 10rem;
+  border-bottom: 1px solid #615c5c;
+  padding: 5rem 10rem;
   width: 100%;
 }
 
@@ -62,7 +62,7 @@ body {
 }
 
 .banner button {
-  color: #95969A;
+  color: #ff0000;
   margin-right: 10px;
   height: 3rem;
   line-height: 3rem;
@@ -76,8 +76,8 @@ body {
 }
 
 .banner button:hover {
-  color: #92e0d3;
-  border-color: whitesmoke;
+  color: #ff0000;
+  border-color: #ff0000;
 }
 
 .banner Img {
@@ -104,7 +104,7 @@ body {
   width: 60vw;
   margin: 10% auto;
   padding: 10px 15px;
-  background-color: #2d3038;
+  background-color: #ff0000;
 }
 
 .close-container {
@@ -123,7 +123,7 @@ body {
 }
 
 .closeButton:hover {
-  color: #91dfd2;
+  color: #ff0000;
 }
 
 /* Tabs
@@ -134,7 +134,7 @@ body {
 }
 
 .custom-tabs {
-  background-color: #1E2130;
+  background-color: #918a94;
   text-transform: uppercase;
   font-weight: 600;
   font-size: 14px;
@@ -143,11 +143,14 @@ body {
 }
 
 #Specs-tab.custom-tab, #Control-chart-tab.custom-tab {
-  background-color: #161a28;
+  background-color: #615c5c;
   letter-spacing: 1px;
   color: inherit;
   border: 0;
-  border-bottom: #1E2130 solid 4px !important;
+  border-bottom: #918a94 solid 4px !important;
+  border-top: #918a94 solid 4px !important;
+  border-right: #918a94 solid 4px !important;
+  border-left: #918a94 solid 4px !important;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -157,7 +160,10 @@ body {
 }
 
 #Specs-tab.custom-tab--selected, #Control-chart-tab.custom-tab--selected {
-  border-bottom: #91dfd2 solid 4px !important;
+  border-bottom: white solid 4px !important;
+  border-top: white solid 4px !important;
+  border-right: white solid 4px !important;
+  border-left: white solid 4px !important;
 }
 
 #Specs-tab.custom-tab {
@@ -169,18 +175,19 @@ body {
 }
 
 .section-banner {
-  color: darkgray;
+  color: black;
+  font-weight: bold;
   font-size: 1.5rem;
   text-align: left;
   padding: 1rem 2rem;
-  border-bottom: 1px solid #4b5460;
+  border-bottom: 2px solid #918a94;
 }
 
 /* Main Dashboard Tab
 –––––––––––––––––––––––––––––––––––––––––––––––––– */
 
 #top-section-container {
-  height: 40rem;
+  height: 35rem;
   flex-direction: row;
   display: flex;
   max-width: 100%;
@@ -206,7 +213,7 @@ body {
 }
 
 .metric-row:hover {
-  background-color: #0F1328;
+  background-color: #918a94;
 }
 
 /*Dash Daq Graduatebar */
@@ -219,7 +226,7 @@ body {
 #Overlay_OOC_graph > div > div,
 #Volume_OOC_graph > div > div {
   width: 100%;
-  background-color: #1e2130 !important;
+  background-color: red !important;
 }
 
 #quick-stats.row {
@@ -233,10 +240,17 @@ body {
   position: relative;
   z-index: 4;
   width: 100%;
-  border-top: #1E2130 solid 0.8rem;
+  border-top: red solid 0.8rem;
 }
 
 #metric-summary-session {
+  border-top: #918a94 solid 0.8rem;
+  height: 100%;
+  flex: 1 1 auto;
+}
+
+#bottom-piechart-div {
+  border-left: #918a94 solid 0.8rem;
   height: 100%;
   flex: 1 1 auto;
 }
@@ -249,14 +263,8 @@ body {
 #ooc-piechart-outer {
   height: 100%;
   margin: 0;
-  border-left: #1E2130 solid 0.8rem;
-  flex: 1 1 auto;
-}
-
-#ooc-piechart-outer-teste {
-  height: 100%;
-  margin: 0;
-  border-left: #1E2130 solid 0.8rem;
+  border-left: #918a94 solid 0.8rem;
+  border-top: #918a94 solid 0.8rem;
   flex: 1 1 auto;
 }
 
@@ -269,23 +277,23 @@ body {
   flex-direction: column;
   justify-content: space-evenly;
   margin: 0;
-  border-top: #1E2130 solid 0rem;
+  border-top: #918a94 solid 0rem;
   padding: 0;
   width: 100%;
 }
 
-#card-2, #utility-card {
+#card-2{
   display: flex;
   flex-direction: column;
   justify-content: space-evenly;
   margin: 0;
-  border-top: #1E2130 solid 0.8rem;
+  border-top: #918a94 solid 0.8rem;
   padding: 0;
   width: 100%;
 }
 
 #card-1 {
-  margin-top: -8rem;
+  margin-top: -14.3rem;
   margin-bottom: -1.3rem;
 }
 
@@ -300,7 +308,7 @@ body {
 }
 
 #stop-button > div > button:hover {
-  color: #91dfd2 !important;
+  color: red !important;
 }
 
 /* Tab1 content
@@ -314,7 +322,7 @@ body {
 
 
 #metric-select-title {
-  color: darkgray;
+  color: red;
 }
 
 #button-div {
@@ -333,10 +341,10 @@ body {
 
 #value-setter-panel-header {
   font-weight: bold;
-  color: darkgray;
+  color: red;
   line-height: 1;
   padding: 2rem 0;
-  border-bottom: 1px solid #4b5460;
+  border-bottom: 1px solid red;
 }
 
 #value-setter-panel-header > div {
@@ -344,13 +352,13 @@ body {
 }
 
 #value-setter-view-btn, #value-setter-set-btn {
-  border: 1px solid #4B5460;
-  color: darkgray;
+  border: 1px solid red;
+  color: red;
 }
 
 #value-setter-set-btn:hover, #value-setter-view-btn:hover {
-  color: #91dfd2;
-  border-color: white;
+  color: red;
+  border-color: red;
 }
 
 #value-setter-panel-usl, #value-setter-panel-lsl, #value-setter-panel-ucl, #value-setter-panel-lcl {
@@ -375,17 +383,17 @@ body {
 }
 
 .react-numeric-input input {
-  background-color: #242633 !important;
-  border-color: darkgray !important;
-  color: white !important;
+  background-color: red !important;
+  border-color: red !important;
+  color: red !important;
 }
 
 .react-numeric-input b:nth-child(2) i {
-  border-color: transparent transparent white !important;
+  border-color: transparent transparent red !important;
 }
 
 .react-numeric-input b:nth-child(3) i {
-  border-color: white transparent transparent !important;
+  border-color: red transparent transparent !important;
 }
 
 
@@ -443,11 +451,11 @@ body {
 –––––––––––––––––––––––––––––––––––––––––––––––––– */
 
 #app-container {
-  background: #161a28;
+  background: #615c5c;
   margin: 1rem 2rem;
   max-width: 100%;
   width: 100%;
-  height: calc(100vh - 10rem - 1px);
+  height: calc(50vh - 10rem - 1px);
 }
 
 #app-content {
@@ -503,7 +511,7 @@ body {
   flex-direction: column;
   align-items: center;
   justify-content: flex-start;
-  border-right: #1E2130 solid 0.8rem;
+  border-right: #918a94 solid 0.8rem;
   flex: 1 1;
   padding: 0.01rem;
   max-width: 100%;
@@ -556,9 +564,9 @@ body {
 /* Tab 2 Specs
 –––––––––––––––––––––––––––––––––––––––––––––––––– */
 #stop-button > div > button {
-  color: white !important;
-  background-color: #1d202d !important;
-  border: 1px solid #4B5460 !important;
+  color: black !important;
+  background-color: #918a94 !important;
+  border: 1px solid black !important;
   border-radius: 4px;
   height: 40px;
   line-height: 40px;
@@ -586,14 +594,14 @@ body {
 .metric-row-button {
   border: none;
   padding: 0px 0px;
-  color: #95969A;
+  color: red;
   font-size: 1rem;
   letter-spacing: 0.02rem;
 }
 
 .metric-row-button:hover {
   border: none;
-  color: white !important;
+  color: red !important;
 }
 
 #metric-div {
@@ -763,8 +771,8 @@ body {
     height: fit-content !important;
     justify-content: space-between;
     align-items: flex-start;
-    border-top: 1px solid #1E2130;
-    border-bottom: 1px solid #1E2130;
+    border-top: 1px solid red;
+    border-bottom: 1px solid red;
   }
 
   #metric-rows .column, #metric-rows .columns {

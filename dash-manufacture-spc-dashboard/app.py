@@ -57,25 +57,8 @@ def build_banner():
         id="banner",
         className="banner",
         children=[
-            html.Div(
-                id="banner-text",
-                children=[
-                    html.H5("Dashboard - Sistemas Operacionais"),
-                    html.H6("Projeto Final - Disciplina Sistemas Operacionais 2022/2"),
-                ],
-            ),
-            html.Div(
-                id="banner-logo",
-                children=[
-                    html.A(
-                        html.Button(children="Moodle da Disciplina"),
-                        href="https://moodle.utfpr.edu.br/course/view.php?id=23306",
-                    ),
-                    html.Button(
-                        id="learn-more-button", children="Sobre o Projeto", n_clicks=0
-                    ),
-                ],
-            ),
+                html.H5("Dashboard - Sistemas Operacionais"),
+                html.H6("Projeto Final - Disciplina Sistemas Operacionais 2022/2"),
         ],
     )
 
@@ -363,10 +346,6 @@ def build_quick_stats_panel():
                     html.P("Memória RAM: "+ info_Hardware_Ram()),
                 ],
             ),
-            html.Div(
-                id="utility-card",
-                children=[daq.StopButton(id="stop-button", size=160, n_clicks=0)],
-            ),
         ],
     )
 
@@ -393,6 +372,10 @@ def build_top_panel(stopped_interval):
                     html.Div(
                         id="metric-div",
                         children=[
+                            html.Div(
+                                id="utility-card",
+                                children=[daq.StopButton(id="stop-button", size=100, n_clicks=0)],
+                            ),
                             generate_metric_list_header(),
                             html.Div(
                                 id="metric-rows",
@@ -487,7 +470,7 @@ def generate_metric_row_helper(stopped_interval, index):
                                 "y": list(cpu.core_info[index]['uso_anterior']),
                                 "mode": "lines+markers",
                                 "name": item,
-                                "line": {"color": "#f4d44d"},
+                                "line": {"color": "#33C3F0"},
                             }
                         ],
                         "layout": {
@@ -519,9 +502,9 @@ def generate_metric_row_helper(stopped_interval, index):
                 id=ooc_graph_id,
                 color={
                     "ranges": {
-                        "#92e0d3": [0, 4],
-                        "#f4d44d ": [4, 10],
-                        "#f45060": [10, 15],
+                        "green": [0, 4],
+                        "yellow ": [4, 10],
+                        "red": [10, 15],
                     }
                 },
                 showCurrentValue=False,
@@ -792,7 +775,7 @@ def render_tab_content(tab_switch, stopped_interval):
                 build_quick_stats_panel(),
                 html.Div(
                     id="graphs-container",
-                    children=[build_top_panel(stopped_interval), build_bottom_panel(stopped_interval)],
+                    children=[build_bottom_panel(stopped_interval), build_top_panel(stopped_interval)],
                 ),
             ],
         ),
@@ -827,24 +810,8 @@ def update_interval_state(tab_switch, cur_interval, disabled, cur_stage):
 )
 def stop_production(n_clicks, current):
     if n_clicks == 0:
-        return True, "start"
-    return not current, "stop" if current else "start"
-
-
-# ======= Callbacks for modal popup =======
-@app.callback(
-    Output("markdown", "style"),
-    [Input("learn-more-button", "n_clicks"), Input("markdown_close", "n_clicks")],
-)
-def update_click_output(button_click, close_click):
-    ctx = dash.callback_context
-
-    if ctx.triggered:
-        prop_id = ctx.triggered[0]["prop_id"].split(".")[0]
-        if prop_id == "learn-more-button":
-            return {"display": "block"}
-
-    return {"display": "none"}
+        return True, "Iniciar"
+    return not current, "Parar" if current else "Iniciar"
 
 
 # ======= update progress gauge =========
