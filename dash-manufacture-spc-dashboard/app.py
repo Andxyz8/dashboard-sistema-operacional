@@ -37,6 +37,14 @@ suffix_count = "_count"
 suffix_ooc_n = "_OOC_number"
 suffix_ooc_g = "_OOC_graph"
 
+sufixo_div_bottom_row = 'div-bottom-row'
+sufixo_pid = 'pid'
+sufixo_name = 'name'
+sufixo_username = 'username'
+sufixo_nice = 'nice'
+sufixo_memory = 'memory_percent'
+sufixo_status = 'status_id'
+
 # ------------------- VARIAVEIS GLOBAIS --------------------
 cpu = CPU()
 storage = Armazenamento()
@@ -413,8 +421,8 @@ def generate_piechart(id):
         figure={
             "data": [
                 {
-                    "labels": ['algo', 'algo2'],
-                    "values": [30, 70],
+                    "labels": [],
+                    "values": [],
                     "type": "pie",
                     "marker": {"line": {"color": "white", "width": 0.1}},
                     "hoverinfo": "label",
@@ -563,7 +571,7 @@ def generate_metric_row(id, style, col1, col3, col4, col5):
 
 def build_bottom_panel(stopped_interval):
     rows = []
-    for x in range(cpu.qtd_cores):
+    for x in range(processos.qtd_processos):
         rows.append(generate_bottom_metric_row_helper(stopped_interval, x))
 
     return html.Div(
@@ -607,91 +615,64 @@ def generate_bottom_metric_list_header():
         "bottom_header",
         {"height": "3rem", "margin": "1rem 0", "textAlign": "center"},
         {"id": "bottom_header_1", "children": html.Div("PID")},
-        {"id": "bottom_header_2", "children": html.Div("User")},
-        {"id": "bottom_header_3", "children": html.Div("PR")},
+        {"id": "bottom_header_2", "children": html.Div("Nome")},
+        {"id": "bottom_header_3", "children": html.Div("User")},
         {"id": "bottom_header_4", "children": html.Div("NI")},
-        {"id": "bottom_header_5", "children": html.Div("VIRT")},
-        {"id": "bottom_header_6", "children": html.Div("RES")},
-        {"id": "bottom_header_7", "children": html.Div("SHR")},
-        {"id": "bottom_header_8", "children": html.Div("%CPU")},
-        {"id": "bottom_header_9", "children": html.Div("%MEM")},
-        {"id": "bottom_header_10", "children": html.Div("TIME+")},
-        {"id": "bottom_header_11", "children": html.Div("Command")},
+        {"id": "bottom_header_5", "children": html.Div("%MEM")},
+        {"id": "bottom_header_6", "children": html.Div("Status")},
     )
 
 
 def generate_bottom_metric_row_helper(stopped_interval, index):
-    item = cpu.core_info[index][index]
+    item = str(index)
 
-    div_id = item + suffix_row
-    sparkline_graph_id = item + suffix_sparkline_graph
-    ooc_percentage_id = item + suffix_ooc_n
-    ooc_graph_id = item + suffix_ooc_g
+    div_id = item + sufixo_div_bottom_row
+    pid_id = item + sufixo_pid
+    name_id = item + sufixo_name
+    username_id = item + sufixo_username
+    nice_id = item + sufixo_nice
+    memory_percent_id = item + sufixo_memory
+    status_id = item + sufixo_status
 
     return generate_bottom_metric_row(
         div_id,
         None,
         {
-            "id": item+'1',
+            "id": pid_id,
             "className": "metric-row-button-text",
             "children": item,
         },
         {
-            "id": item+'2',
+            "id": name_id,
             "className": "metric-row-button-text",
             "children": item,
         },
         {
-            "id": item+'3',
+            "id": username_id,
             "className": "metric-row-button-text",
             "children": item,
         },
         {
-            "id": item+'4',
+            "id": nice_id,
             "className": "metric-row-button-text",
             "children": item,
         },
         {
-            "id": item+'7',
+            "id": memory_percent_id,
             "className": "metric-row-button-text",
             "children": item,
         },
         {
-            "id": item+'14',
-            "className": "metric-row-button-text",
-            "children": item,
-        },
-        {
-            "id": item+'13',
-            "className": "metric-row-button-text",
-            "children": item,
-        },
-        {
-            "id": item+'12',
-            "className": "metric-row-button-text",
-            "children": item,
-        },
-        {
-            "id": item+'11',
-            "className": "metric-row-button-text",
-            "children": item,
-        },
-        {
-            "id": item+'10',
-            "className": "metric-row-button-text",
-            "children": item,
-        },
-        {
-            "id": item+'11',
+            "id": status_id,
             "className": "metric-row-button-text",
             "children": item,
         },
     )
 
 
-def generate_bottom_metric_row(id, style, col1, col2, col3, col4, col5, col6, col7, col8, col9, col10, col11):
+def generate_bottom_metric_row(id, style, col1, col2, col3, col4, col5, col6):
     if style is None:
-        style = {"height": "2rem", "width": "100%"}
+        style = {"height": "5rem", "width": "100%"}
 
     return html.Div(
         id=id,
@@ -734,36 +715,6 @@ def generate_bottom_metric_row(id, style, col1, col2, col3, col4, col5, col6, co
                 className="one column",
                 children=col6["children"],
             ),
-            html.Div(
-                id=col7["id"],
-                style={"height": "25%"},
-                className="one column",
-                children=col7["children"],
-            ),
-            html.Div(
-                id=col8["id"],
-                style={"height": "25%"},
-                className="one column",
-                children=col8["children"],
-            ),
-            html.Div(
-                id=col9["id"],
-                className="one column",
-                style={"height": "25%"},
-                children=col9["children"],
-            ),
-            html.Div(
-                id=col10["id"],
-                style={"height": "25%"},
-                className="one column",
-                children=col10["children"],
-            ),
-            html.Div(
-                id=col11["id"],
-                style={"height": "25%"},
-                className="one column",
-                children=col11["children"],
-            ),
         ],
     )
 
@@ -783,7 +734,7 @@ def update_sparkline(interval, index):
     return dict(x=[[x_new]], y=[[y_new]]), [0]
 
 
-def update_count(interval, index, data):
+def update_count(interval, index):
     if interval == 0:
         return "0", "0.00%", 0.00001, "#92e0d3"
 
@@ -805,7 +756,7 @@ app.layout = html.Div(
         build_banner(),
         dcc.Interval(
             id="interval-component",
-            interval= 2*1000,  # in milliseconds
+            interval= 5*1000,  # in milliseconds
             n_intervals=0,  # start at batch 50
             disabled=True,
         ),
@@ -841,7 +792,6 @@ def render_tab_content(tab_switch, stopped_interval):
                 build_quick_stats_panel(),
                 html.Div(
                     id="graphs-container",
-                    #children=[build_top_panel(stopped_interval), build_chart_panel()],
                     children=[build_top_panel(stopped_interval), build_bottom_panel(stopped_interval)],
                 ),
             ],
@@ -1047,10 +997,34 @@ def show_current_specs(n_clicks, dd_select, store_data):
 
 
 # decorator for list of output
+def create_callback_bottom(index):
+    def callback(interval):
+        processos.atualiza_info_processos()
+        return processos.get_infos_processo(index)
+
+    return callback
+
+
+for index in range(processos.qtd_processos):
+    update_param_row_function = create_callback_bottom(index)
+    app.callback(
+        output=[
+            Output(str(index)+sufixo_pid, "children"),
+            Output(str(index)+sufixo_name, "children"),
+            Output(str(index)+sufixo_username, "children"),
+            Output(str(index)+sufixo_nice, "children"),
+            Output(str(index)+sufixo_memory, "children"),
+            Output(str(index)+sufixo_status, "children"),
+        ],
+        inputs=[Input("interval-component", "n_intervals")],
+    )(update_param_row_function)
+
+
+# decorator for list of output
 def create_callback(index):
     def callback(interval, stored_data):
         cpu.atualiza_info_cores()
-        uso_atual, uso_atual_barra = update_count(interval, index, stored_data)
+        uso_atual, uso_atual_barra = update_count(interval, index)
         spark_line_data = update_sparkline(interval, index)
         return spark_line_data, uso_atual, uso_atual_barra
 
@@ -1070,41 +1044,7 @@ for index in range(cpu.qtd_cores):
     )(update_param_row_function)
 
 
-#  ======= button to choose/update figure based on click ============
-@app.callback(
-    output=Output("control-chart-live", "figure"),
-    inputs=[
-        Input("interval-component", "n_intervals"),
-    ],
-    state=[State("value-setter-store", "data"), State("control-chart-live", "figure")],
-)
-def update_control_chart(interval, data, cur_fig):
-    # Find which one has been triggered
-    ctx = dash.callback_context
-
-    if not ctx.triggered:
-        return generate_graph(interval, data, params[1])
-
-    if ctx.triggered:
-        # Get most recently triggered id and prop_type
-        splitted = ctx.triggered[0]["prop_id"].split(".")
-        prop_id = splitted[0]
-        prop_type = splitted[1]
-
-        if prop_type == "n_clicks":
-            curr_id = cur_fig["data"][0]["name"]
-            prop_id = prop_id[:-7]
-            if curr_id == prop_id:
-                return generate_graph(interval, data, curr_id)
-            else:
-                return generate_graph(interval, data, prop_id)
-
-        if prop_type == "n_intervals" and cur_fig is not None:
-            curr_id = cur_fig["data"][0]["name"]
-            return generate_graph(interval, data, curr_id)
-
-
-# Update piechart
+# Atualiza o piechart do Armazenamento
 @app.callback(
     output=Output("piechart", "figure"),
     inputs=[Input("interval-component", "n_intervals")],
@@ -1126,7 +1066,7 @@ def update_piechart(interval):
     for device in storage.device_info:
         labels.append(device['device'])
         values.append(device['ocupado'])
-        colors.append('red')
+        colors.append(device['cor'])
 
     labels.append('Livre')
     values.append(round((storage.total - storage.ocupado), 2))
@@ -1139,15 +1079,68 @@ def update_piechart(interval):
                 "values": values,
                 "type": "pie",
                 "marker": {"colors": colors, "line": dict(color="white", width=2)},
-                "hoverinfo": "label",
-                "textinfo": "label",
+                "hoverinfo": "labels",
+                "textinfo": "labels",
             }
         ],
         "layout": {
             "margin": dict(t=5, b=80),
             "uirevision": True,
             "font": {"color": "white"},
-            "showlegend": False,
+            "showlegend": True,
+            "paper_bgcolor": "rgba(0,0,0,0)",
+            "plot_bgcolor": "rgba(0,0,0,0)",
+            "autosize": True,
+        },
+    }
+    return new_figure
+
+
+# Atualiza o piechart da RAM
+@app.callback(
+    output=Output("bottom-piechart", "figure"),
+    inputs=[Input("interval-component", "n_intervals")],
+)
+def update_ram_piechart(interval):
+    ram.atualiza_info_ram()
+    if(interval == 0):
+        return {
+            "data": [],
+            "layout": {
+                "font": {"color": "white"},
+                "paper_bgcolor": "rgba(0,0,0,0)",
+                "plot_bgcolor": "rgba(0,0,0,0)",
+            },
+        }
+
+    labels = []
+    values = []
+    colors = []
+    for info in ram.ram_info:
+        labels.append(info)
+        values.append(ram.ram_info[info])
+        colors.append('green')
+
+    labels.append('Em uso')
+    values.append(ram.get_ram_em_uso())
+    colors.append("red")
+
+    new_figure = {
+        "data": [
+            {
+                "labels": labels,
+                "values": values,
+                "type": "pie",
+                "marker": {"colors": colors, "line": dict(color="white", width=2)},
+                "hoverinfo": "label",
+                "textinfo": "values",
+            }
+        ],
+        "layout": {
+            "margin": dict(t=5, b=80),
+            "uirevision": True,
+            "font": {"color": "white"},
+            "showlegend": True,
             "paper_bgcolor": "rgba(0,0,0,0)",
             "plot_bgcolor": "rgba(0,0,0,0)",
             "autosize": True,
