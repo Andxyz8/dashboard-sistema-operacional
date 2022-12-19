@@ -8,7 +8,7 @@ class CPU():
 
 
     def __get_uso_atual_cpu(self, index):
-        return psutil.cpu_percent(interval=0.2, percpu=True)[index]
+        return psutil.cpu_percent(interval=0.5, percpu=True)[index]
 
 
     def __inicializa_cpu_info(self):

@@ -870,3 +870,68 @@ body {
     margin-left: 0;
   }
 }
+
+
+.terminal-div-viewport {
+  width: 100%;
+  height: 100%;
+
+}
+
+.terminal-div-titulo {
+  border-top: 3%;
+  border-bottom: 2%;
+}
+
+
+.terminal-div-input {
+  display: inline-block;
+  height: 10%;
+  width: 75%;
+  margin-left: 3%;
+  margin-right: 1%;
+}
+
+
+.terminal-textArea {
+  resize: none;
+  height: 10%;
+  width: 100%;
+  margin-top: 1%;
+  margin-left: 1%;
+  margin-right: 1%;
+  margin-bottom: 1%;
+}
+
+
+.terminal-div-botao-executar {
+  display: inline-block;
+  height: 100%;
+  width: 10%;
+}
+
+
+.terminal-botao-executar {
+  margin-left: 1%;
+  margin-right: 1%;
+}
+
+
+.terminal-div-retorno {
+  height: 100%;
+  width: 100%;
+  margin-left: 3%;
+  margin-right: 1%;
+}
+
+
+.terminal-area-retorno {
+  resize: none;
+  height: 30vh;
+  width: 80vw;
+  margin-top: 2%;
+  margin-left: 1%;
+  margin-right: 1%;
+  margin-bottom: 2%;
+  border: solid black 1px;
+}
