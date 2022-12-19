@@ -1,6 +1,5 @@
 import os
 import pathlib
-
 import dash
 import dash_core_components as dcc
 import dash_html_components as html
@@ -8,8 +7,15 @@ from dash.dependencies import Input, Output, State
 import dash_table
 import plotly.graph_objs as go
 import dash_daq as daq
-
 import pandas as pd
+
+
+import platform
+import subprocess
+from libs.cpu import CPU
+from libs.armazenamento import Armazenamento
+from libs.processos import Processos
+from libs.ram import RAM
 
 app = dash.Dash(
     __name__,
@@ -23,16 +29,20 @@ APP_PATH = str(pathlib.Path(__file__).parent.resolve())
 df = pd.read_csv(os.path.join(APP_PATH, os.path.join("data", "spc_data.csv")))
 
 params = list(df)
-max_length = len(df)
+max_length = 1800
 
 suffix_row = "_row"
-suffix_button_id = "_button"
 suffix_sparkline_graph = "_sparkline_graph"
 suffix_count = "_count"
 suffix_ooc_n = "_OOC_number"
 suffix_ooc_g = "_OOC_graph"
-suffix_indicator = "_indicator"
 
+# ------------------- VARIAVEIS GLOBAIS --------------------
+cpu = CPU()
+storage = Armazenamento()
+ram = RAM()
+processos = Processos()
+# ------------------- VARIAVEIS GLOBAIS --------------------
 
 def build_banner():
     return html.Div(
@@ -74,14 +84,14 @@ def build_tabs():
                 children=[
                     dcc.Tab(
                         id="Specs-tab",
-                        label="Specification Settings",
+                        label="Terminal",
                         value="tab1",
                         className="custom-tab",
                         selected_className="custom-tab--selected",
                     ),
                     dcc.Tab(
                         id="Control-chart-tab",
-                        label="Control Charts Dashboard",
+                        label="Hardware e Processos",
                         value="tab2",
                         className="custom-tab",
                         selected_className="custom-tab--selected",
@@ -258,15 +268,15 @@ def generate_modal():
 
                         A aplicação contam com 5 botões principais:
 
-                        -O primeiro demonstra informações sobre o sistema operacional instalado e informações de Hardware;
+                        - O primeiro demonstra informações sobre o sistema operacional instalado e informações de Hardware;
                         
-                        -O segundo apresenta informações sobre as threads e processos do sistemas que estão ativos no momento;
+                        - O segundo apresenta informações sobre as threads e processos do sistemas que estão ativos no momento;
 
-                        -O terceiro conta com o sistema de arquivos do sistema, ou seja, a árvore de diretórios;
+                        - O terceiro conta com o sistema de arquivos do sistema, ou seja, a árvore de diretórios;
 
-                        -O quarto mostra as informações referentes ao uso da memória no sistema;
+                        - O quarto mostra as informações referentes ao uso da memória no sistema;
 
-                        -E por fim, o quinto e último botão, simula um terminal de comando Linux. 
+                        - E por fim, o quinto e último botão, simula um terminal de comando Linux. 
 
                     """
                             )
@@ -278,6 +288,49 @@ def generate_modal():
     )
 
 
+# Informações do Sistema operacional
+def info_Sistema_Operacional_system():
+    variaveis_Sistema = platform.uname()
+    return variaveis_Sistema.system
+
+def info_Sistema_Operacional_node():
+    variaveis_Sistema = platform.uname()
+    return variaveis_Sistema.node
+
+def info_Sistema_Operacional_release():
+    variaveis_Sistema = platform.uname()
+    return variaveis_Sistema.release
+
+def info_Sistema_Operacional_version():
+    variaveis_Sistema = platform.uname()
+    return variaveis_Sistema.version
+
+# Informações de arquitetura da máquina
+def executa_comando_terminal(comando):
+    comando_executado = subprocess.run(
+        args=comando,
+        shell=True,
+        capture_output=True,
+        universal_newlines=True
+    )
+    print(comando_executado.stdout)
+    return comando_executado.stdout
+
+def info_Hardware_Processador():
+    comando = executa_comando_terminal("lshw -class CPU")
+    comando = comando.split("cpu")
+    comando = comando[1]
+    comando = comando.split("fabricante")
+    comando = comando[0]
+    comando = comando.split(":")
+    comando = comando[1]
+    return comando
+
+def info_Hardware_Ram():
+    comando = executa_comando_terminal("grep MemTotal /proc/meminfo")
+    comando = comando.split(":")
+    return comando[1]
+
 def build_quick_stats_panel():
     return html.Div(
         id="quick-stats",
@@ -286,26 +339,20 @@ def build_quick_stats_panel():
             html.Div(
                 id="card-1",
                 children=[
-                    html.P("Operator ID"),
-                    daq.LEDDisplay(
-                        id="operator-led",
-                        value="1704",
-                        color="#92e0d3",
-                        backgroundColor="#1e2130",
-                        size=50,
-                    ),
+                    generate_section_banner("-> Informações do Sistema: "),
+                    html.P("Kernel: "+ info_Sistema_Operacional_system()),
+                    html.P("Nome do Nó: "+ info_Sistema_Operacional_node()),
+                    html.P("Versão: "+ info_Sistema_Operacional_release()),
+                    html.P("Data de criação: "+ info_Sistema_Operacional_version()),
                 ],
             ),
             html.Div(
                 id="card-2",
+                className="four columns",
                 children=[
-                    html.P("Time to completion"),
-                    daq.Gauge(
-                        id="progress-gauge",
-                        max=max_length * 2,
-                        min=0,
-                        showCurrentValue=True,  # default size 200 pixel
-                    ),
+                    generate_section_banner("-> Informações do Hardware:"),
+                    html.P("Processador: "+ info_Hardware_Processador()),
+                    html.P("Memória RAM: "+ info_Hardware_Ram()),
                 ],
             ),
             html.Div(
@@ -321,6 +368,10 @@ def generate_section_banner(title):
 
 
 def build_top_panel(stopped_interval):
+    rows = []
+    for x in range(cpu.qtd_cores):
+        rows.append(generate_metric_row_helper(stopped_interval, x))
+
     return html.Div(
         id="top-section-container",
         className="row",
@@ -330,22 +381,14 @@ def build_top_panel(stopped_interval):
                 id="metric-summary-session",
                 className="eight columns",
                 children=[
-                    generate_section_banner("Process Control Metrics Summary"),
+                    generate_section_banner("CPU"),
                     html.Div(
                         id="metric-div",
                         children=[
                             generate_metric_list_header(),
                             html.Div(
                                 id="metric-rows",
-                                children=[
-                                    generate_metric_row_helper(stopped_interval, 1),
-                                    generate_metric_row_helper(stopped_interval, 2),
-                                    generate_metric_row_helper(stopped_interval, 3),
-                                    generate_metric_row_helper(stopped_interval, 4),
-                                    generate_metric_row_helper(stopped_interval, 5),
-                                    generate_metric_row_helper(stopped_interval, 6),
-                                    generate_metric_row_helper(stopped_interval, 7),
-                                ],
+                                children=[x for x in rows],
                             ),
                         ],
                     ),
@@ -356,24 +399,24 @@ def build_top_panel(stopped_interval):
                 id="ooc-piechart-outer",
                 className="four columns",
                 children=[
-                    generate_section_banner("% OOC per Parameter"),
-                    generate_piechart(),
+                    generate_section_banner("Armazenamento"),
+                    generate_piechart('piechart'),
                 ],
             ),
         ],
     )
 
 
-def generate_piechart():
+def generate_piechart(id):
     return dcc.Graph(
-        id="piechart",
+        id=id,
         figure={
             "data": [
                 {
-                    "labels": [],
-                    "values": [],
+                    "labels": ['algo', 'algo2'],
+                    "values": [30, 70],
                     "type": "pie",
-                    "marker": {"line": {"color": "white", "width": 1}},
+                    "marker": {"line": {"color": "white", "width": 0.1}},
                     "hoverinfo": "label",
                     "textinfo": "label",
                 }
@@ -395,25 +438,20 @@ def generate_metric_list_header():
     return generate_metric_row(
         "metric_header",
         {"height": "3rem", "margin": "1rem 0", "textAlign": "center"},
-        {"id": "m_header_1", "children": html.Div("Parameter")},
-        {"id": "m_header_2", "children": html.Div("Count")},
-        {"id": "m_header_3", "children": html.Div("Sparkline")},
-        {"id": "m_header_4", "children": html.Div("OOC%")},
-        {"id": "m_header_5", "children": html.Div("%OOC")},
-        {"id": "m_header_6", "children": "Pass/Fail"},
+        {"id": "m_header_1", "children": html.Div("CORE")},
+        {"id": "m_header_3", "children": html.Div("% USO (30 seg.)")},
+        {"id": "m_header_4", "children": html.Div("%")},
+        {"id": "m_header_5", "children": html.Div("% BARRA")},
     )
 
 
 def generate_metric_row_helper(stopped_interval, index):
-    item = params[index]
+    item = cpu.core_info[index][index]
 
     div_id = item + suffix_row
-    button_id = item + suffix_button_id
     sparkline_graph_id = item + suffix_sparkline_graph
-    count_id = item + suffix_count
     ooc_percentage_id = item + suffix_ooc_n
     ooc_graph_id = item + suffix_ooc_g
-    indicator_id = item + suffix_indicator
 
     return generate_metric_row(
         div_id,
@@ -421,15 +459,8 @@ def generate_metric_row_helper(stopped_interval, index):
         {
             "id": item,
             "className": "metric-row-button-text",
-            "children": html.Button(
-                id=button_id,
-                className="metric-row-button",
-                children=item,
-                title="Click to visualize live SPC chart",
-                n_clicks=0,
-            ),
+            "children": item,
         },
-        {"id": count_id, "children": "0"},
         {
             "id": item + "_sparkline",
             "children": dcc.Graph(
@@ -444,10 +475,8 @@ def generate_metric_row_helper(stopped_interval, index):
                     {
                         "data": [
                             {
-                                "x": state_dict["Batch"]["data"].tolist()[
-                                    :stopped_interval
-                                ],
-                                "y": state_dict[item]["data"][:stopped_interval],
+                                "x": [x for x in range(1, stopped_interval+1)],
+                                "y": list(cpu.core_info[index]['uso_anterior']),
                                 "mode": "lines+markers",
                                 "name": item,
                                 "line": {"color": "#f4d44d"},
@@ -475,33 +504,27 @@ def generate_metric_row_helper(stopped_interval, index):
                 ),
             ),
         },
-        {"id": ooc_percentage_id, "children": "0.00%"},
+        {"id": ooc_percentage_id, "children": cpu.core_info[index]['uso_atual']},
         {
             "id": ooc_graph_id + "_container",
             "children": daq.GraduatedBar(
                 id=ooc_graph_id,
                 color={
                     "ranges": {
-                        "#92e0d3": [0, 3],
-                        "#f4d44d ": [3, 7],
-                        "#f45060": [7, 15],
+                        "#92e0d3": [0, 4],
+                        "#f4d44d ": [4, 10],
+                        "#f45060": [10, 15],
                     }
                 },
                 showCurrentValue=False,
                 max=15,
-                value=0,
-            ),
-        },
-        {
-            "id": item + "_pf",
-            "children": daq.Indicator(
-                id=indicator_id, value=True, color="#91dfd2", size=12
+                value=cpu.core_info[index]['uso_atual']*15/100,
             ),
         },
     )
 
 
-def generate_metric_row(id, style, col1, col2, col3, col4, col5, col6):
+def generate_metric_row(id, style, col1, col3, col4, col5):
     if style is None:
         style = {"height": "8rem", "width": "100%"}
 
@@ -515,12 +538,6 @@ def generate_metric_row(id, style, col1, col2, col3, col4, col5, col6):
                 className="one column",
                 style={"margin-right": "2.5rem", "minWidth": "50px"},
                 children=col1["children"],
-            ),
-            html.Div(
-                id=col2["id"],
-                style={"textAlign": "center"},
-                className="one column",
-                children=col2["children"],
             ),
             html.Div(
                 id=col3["id"],
@@ -540,303 +557,246 @@ def generate_metric_row(id, style, col1, col2, col3, col4, col5, col6):
                 className="three columns",
                 children=col5["children"],
             ),
+        ],
+    )
+
+
+def build_bottom_panel(stopped_interval):
+    rows = []
+    for x in range(cpu.qtd_cores):
+        rows.append(generate_bottom_metric_row_helper(stopped_interval, x))
+
+    return html.Div(
+        id="bottom-section-container",
+        className="row",
+        children=[
+            # Metrics summary
+            html.Div(
+                id="bottom-summary-session",
+                className="eight columns",
+                children=[
+                    generate_section_banner("Processos"),
+                    html.Div(
+                        id="bottom-metric-div",
+                        children=[
+                            generate_bottom_metric_list_header(),
+                            html.Div(
+                                id="bottom-metric-rows",
+                                children=[x for x in rows],
+                            ),
+                        ],
+                    ),
+                ],
+            ),
+            # Piechart
+            html.Div(
+                id="bottom-piechart-div",
+                className="four columns",
+                children=[
+                    generate_section_banner("RAM"),
+                    generate_piechart('bottom-piechart'),
+                ],
+            ),
+        ],
+    )
+
+
+# Build header
+def generate_bottom_metric_list_header():
+    return generate_bottom_metric_row(
+        "bottom_header",
+        {"height": "3rem", "margin": "1rem 0", "textAlign": "center"},
+        {"id": "bottom_header_1", "children": html.Div("PID")},
+        {"id": "bottom_header_2", "children": html.Div("User")},
+        {"id": "bottom_header_3", "children": html.Div("PR")},
+        {"id": "bottom_header_4", "children": html.Div("NI")},
+        {"id": "bottom_header_5", "children": html.Div("VIRT")},
+        {"id": "bottom_header_6", "children": html.Div("RES")},
+        {"id": "bottom_header_7", "children": html.Div("SHR")},
+        {"id": "bottom_header_8", "children": html.Div("%CPU")},
+        {"id": "bottom_header_9", "children": html.Div("%MEM")},
+        {"id": "bottom_header_10", "children": html.Div("TIME+")},
+        {"id": "bottom_header_11", "children": html.Div("Command")},
+    )
+
+
+def generate_bottom_metric_row_helper(stopped_interval, index):
+    item = cpu.core_info[index][index]
+
+    div_id = item + suffix_row
+    sparkline_graph_id = item + suffix_sparkline_graph
+    ooc_percentage_id = item + suffix_ooc_n
+    ooc_graph_id = item + suffix_ooc_g
+
+    return generate_bottom_metric_row(
+        div_id,
+        None,
+        {
+            "id": item+'1',
+            "className": "metric-row-button-text",
+            "children": item,
+        },
+        {
+            "id": item+'2',
+            "className": "metric-row-button-text",
+            "children": item,
+        },
+        {
+            "id": item+'3',
+            "className": "metric-row-button-text",
+            "children": item,
+        },
+        {
+            "id": item+'4',
+            "className": "metric-row-button-text",
+            "children": item,
+        },
+        {
+            "id": item+'7',
+            "className": "metric-row-button-text",
+            "children": item,
+        },
+        {
+            "id": item+'14',
+            "className": "metric-row-button-text",
+            "children": item,
+        },
+        {
+            "id": item+'13',
+            "className": "metric-row-button-text",
+            "children": item,
+        },
+        {
+            "id": item+'12',
+            "className": "metric-row-button-text",
+            "children": item,
+        },
+        {
+            "id": item+'11',
+            "className": "metric-row-button-text",
+            "children": item,
+        },
+        {
+            "id": item+'10',
+            "className": "metric-row-button-text",
+            "children": item,
+        },
+        {
+            "id": item+'11',
+            "className": "metric-row-button-text",
+            "children": item,
+        },
+    )
+
+
+def generate_bottom_metric_row(id, style, col1, col2, col3, col4, col5, col6, col7, col8, col9, col10, col11):
+    if style is None:
+        style = {"height": "2rem", "width": "100%"}
+
+    return html.Div(
+        id=id,
+        className="bottom row metric-row",
+        style=style,
+        children=[
+            html.Div(
+                id=col1["id"],
+                className="one column",
+                style={"height": "25%"},
+                children=col1["children"],
+            ),
+            html.Div(
+                id=col2["id"],
+                style={"height": "25%"},
+                className="one column",
+                children=col2["children"],
+            ),
+            html.Div(
+                id=col3["id"],
+                style={"height": "25%"},
+                className="one column",
+                children=col3["children"],
+            ),
+            html.Div(
+                id=col4["id"],
+                style={"height": "25%"},
+                className="one column",
+                children=col4["children"],
+            ),
+            html.Div(
+                id=col5["id"],
+                className="one column",
+                style={"height": "25%"},
+                children=col5["children"],
+            ),
             html.Div(
                 id=col6["id"],
-                style={"display": "flex", "justifyContent": "center"},
+                style={"height": "25%"},
                 className="one column",
                 children=col6["children"],
             ),
-        ],
-    )
-
-
-def build_chart_panel():
-    return html.Div(
-        id="control-chart-container",
-        className="twelve columns",
-        children=[
-            generate_section_banner("Live SPC Chart"),
-            dcc.Graph(
-                id="control-chart-live",
-                figure=go.Figure(
-                    {
-                        "data": [
-                            {
-                                "x": [],
-                                "y": [],
-                                "mode": "lines+markers",
-                                "name": params[1],
-                            }
-                        ],
-                        "layout": {
-                            "paper_bgcolor": "rgba(0,0,0,0)",
-                            "plot_bgcolor": "rgba(0,0,0,0)",
-                            "xaxis": dict(
-                                showline=False, showgrid=False, zeroline=False
-                            ),
-                            "yaxis": dict(
-                                showgrid=False, showline=False, zeroline=False
-                            ),
-                            "autosize": True,
-                        },
-                    }
-                ),
+            html.Div(
+                id=col7["id"],
+                style={"height": "25%"},
+                className="one column",
+                children=col7["children"],
+            ),
+            html.Div(
+                id=col8["id"],
+                style={"height": "25%"},
+                className="one column",
+                children=col8["children"],
+            ),
+            html.Div(
+                id=col9["id"],
+                className="one column",
+                style={"height": "25%"},
+                children=col9["children"],
+            ),
+            html.Div(
+                id=col10["id"],
+                style={"height": "25%"},
+                className="one column",
+                children=col10["children"],
+            ),
+            html.Div(
+                id=col11["id"],
+                style={"height": "25%"},
+                className="one column",
+                children=col11["children"],
             ),
         ],
     )
 
 
-def generate_graph(interval, specs_dict, col):
-    stats = state_dict[col]
-    col_data = stats["data"]
-    mean = stats["mean"]
-    ucl = specs_dict[col]["ucl"]
-    lcl = specs_dict[col]["lcl"]
-    usl = specs_dict[col]["usl"]
-    lsl = specs_dict[col]["lsl"]
-
-    x_array = state_dict["Batch"]["data"].tolist()
-    y_array = col_data.tolist()
-
-    total_count = 0
-
-    if interval > max_length:
-        total_count = max_length - 1
-    elif interval > 0:
-        total_count = interval
-
-    ooc_trace = {
-        "x": [],
-        "y": [],
-        "name": "Out of Control",
-        "mode": "markers",
-        "marker": dict(color="rgba(210, 77, 87, 0.7)", symbol="square", size=11),
-    }
-
-    for index, data in enumerate(y_array[:total_count]):
-        if data >= ucl or data <= lcl:
-            ooc_trace["x"].append(index + 1)
-            ooc_trace["y"].append(data)
-
-    histo_trace = {
-        "x": x_array[:total_count],
-        "y": y_array[:total_count],
-        "type": "histogram",
-        "orientation": "h",
-        "name": "Distribution",
-        "xaxis": "x2",
-        "yaxis": "y2",
-        "marker": {"color": "#f4d44d"},
-    }
-
-    fig = {
-        "data": [
-            {
-                "x": x_array[:total_count],
-                "y": y_array[:total_count],
-                "mode": "lines+markers",
-                "name": col,
-                "line": {"color": "#f4d44d"},
-            },
-            ooc_trace,
-            histo_trace,
-        ]
-    }
-
-    len_figure = len(fig["data"][0]["x"])
-
-    fig["layout"] = dict(
-        margin=dict(t=40),
-        hovermode="closest",
-        uirevision=col,
-        paper_bgcolor="rgba(0,0,0,0)",
-        plot_bgcolor="rgba(0,0,0,0)",
-        legend={"font": {"color": "darkgray"}, "orientation": "h", "x": 0, "y": 1.1},
-        font={"color": "darkgray"},
-        showlegend=True,
-        xaxis={
-            "zeroline": False,
-            "showgrid": False,
-            "title": "Batch Number",
-            "showline": False,
-            "domain": [0, 0.8],
-            "titlefont": {"color": "darkgray"},
-        },
-        yaxis={
-            "title": col,
-            "showgrid": False,
-            "showline": False,
-            "zeroline": False,
-            "autorange": True,
-            "titlefont": {"color": "darkgray"},
-        },
-        annotations=[
-            {
-                "x": 0.75,
-                "y": lcl,
-                "xref": "paper",
-                "yref": "y",
-                "text": "LCL:" + str(round(lcl, 3)),
-                "showarrow": False,
-                "font": {"color": "white"},
-            },
-            {
-                "x": 0.75,
-                "y": ucl,
-                "xref": "paper",
-                "yref": "y",
-                "text": "UCL: " + str(round(ucl, 3)),
-                "showarrow": False,
-                "font": {"color": "white"},
-            },
-            {
-                "x": 0.75,
-                "y": usl,
-                "xref": "paper",
-                "yref": "y",
-                "text": "USL: " + str(round(usl, 3)),
-                "showarrow": False,
-                "font": {"color": "white"},
-            },
-            {
-                "x": 0.75,
-                "y": lsl,
-                "xref": "paper",
-                "yref": "y",
-                "text": "LSL: " + str(round(lsl, 3)),
-                "showarrow": False,
-                "font": {"color": "white"},
-            },
-            {
-                "x": 0.75,
-                "y": mean,
-                "xref": "paper",
-                "yref": "y",
-                "text": "Targeted mean: " + str(round(mean, 3)),
-                "showarrow": False,
-                "font": {"color": "white"},
-            },
-        ],
-        shapes=[
-            {
-                "type": "line",
-                "xref": "x",
-                "yref": "y",
-                "x0": 1,
-                "y0": usl,
-                "x1": len_figure + 1,
-                "y1": usl,
-                "line": {"color": "#91dfd2", "width": 1, "dash": "dot"},
-            },
-            {
-                "type": "line",
-                "xref": "x",
-                "yref": "y",
-                "x0": 1,
-                "y0": lsl,
-                "x1": len_figure + 1,
-                "y1": lsl,
-                "line": {"color": "#91dfd2", "width": 1, "dash": "dot"},
-            },
-            {
-                "type": "line",
-                "xref": "x",
-                "yref": "y",
-                "x0": 1,
-                "y0": ucl,
-                "x1": len_figure + 1,
-                "y1": ucl,
-                "line": {"color": "rgb(255,127,80)", "width": 1, "dash": "dot"},
-            },
-            {
-                "type": "line",
-                "xref": "x",
-                "yref": "y",
-                "x0": 1,
-                "y0": mean,
-                "x1": len_figure + 1,
-                "y1": mean,
-                "line": {"color": "rgb(255,127,80)", "width": 2},
-            },
-            {
-                "type": "line",
-                "xref": "x",
-                "yref": "y",
-                "x0": 1,
-                "y0": lcl,
-                "x1": len_figure + 1,
-                "y1": lcl,
-                "line": {"color": "rgb(255,127,80)", "width": 1, "dash": "dot"},
-            },
-        ],
-        xaxis2={
-            "title": "Count",
-            "domain": [0.8, 1],  # 70 to 100 % of width
-            "titlefont": {"color": "darkgray"},
-            "showgrid": False,
-        },
-        yaxis2={
-            "anchor": "free",
-            "overlaying": "y",
-            "side": "right",
-            "showticklabels": False,
-            "titlefont": {"color": "darkgray"},
-        },
-    )
-
-    return fig
-
-
-def update_sparkline(interval, param):
-    x_array = state_dict["Batch"]["data"].tolist()
-    y_array = state_dict[param]["data"].tolist()
+# ------------------ DAQUI PRA BAIXO UPDATES ------------------
+def update_sparkline(interval, index):
+    x_array = [x for x in range(1, len(cpu.core_info[index]['uso_anterior'])+1)]
+    y_array = cpu.core_info[index]['uso_anterior']
 
     if interval == 0:
         x_new = y_new = None
 
     else:
-        if interval >= max_length:
-            total_count = max_length
-        else:
-            total_count = interval
-        x_new = x_array[:total_count][-1]
-        y_new = y_array[:total_count][-1]
+        x_new = x_array[:][-1]
+        y_new = y_array[:][-1]
 
     return dict(x=[[x_new]], y=[[y_new]]), [0]
 
 
-def update_count(interval, col, data):
+def update_count(interval, index, data):
     if interval == 0:
         return "0", "0.00%", 0.00001, "#92e0d3"
 
     if interval > 0:
+        uso_atual = cpu.core_info[index]['uso_atual']
+        uso_atual_str = "%.2f" % uso_atual + "%"
 
-        if interval >= max_length:
-            total_count = max_length - 1
+        if uso_atual == 0.0:
+            uso_atual_barra = 0.00001
         else:
-            total_count = interval - 1
+            uso_atual_barra = float(uso_atual*15/100)
 
-        ooc_percentage_f = data[col]["ooc"][total_count] * 100
-        ooc_percentage_str = "%.2f" % ooc_percentage_f + "%"
-
-        # Set maximum ooc to 15 for better grad bar display
-        if ooc_percentage_f > 15:
-            ooc_percentage_f = 15
-
-        if ooc_percentage_f == 0.0:
-            ooc_grad_val = 0.00001
-        else:
-            ooc_grad_val = float(ooc_percentage_f)
-
-        # Set indicator theme according to threshold 5%
-        if 0 <= ooc_grad_val <= 5:
-            color = "#92e0d3"
-        elif 5 < ooc_grad_val < 7:
-            color = "#f4d44d"
-        else:
-            color = "#FF0000"
-
-    return str(total_count + 1), ooc_percentage_str, ooc_grad_val, color
+    return uso_atual_str, uso_atual_barra
 
 
 app.layout = html.Div(
@@ -845,8 +805,8 @@ app.layout = html.Div(
         build_banner(),
         dcc.Interval(
             id="interval-component",
-            interval=2 * 1000,  # in milliseconds
-            n_intervals=50,  # start at batch 50
+            interval= 2*1000,  # in milliseconds
+            n_intervals=0,  # start at batch 50
             disabled=True,
         ),
         html.Div(
@@ -858,7 +818,7 @@ app.layout = html.Div(
             ],
         ),
         dcc.Store(id="value-setter-store", data=init_value_setter_store()),
-        dcc.Store(id="n-interval-stage", data=50),
+        dcc.Store(id="n-interval-stage", data=30),
         generate_modal(),
     ],
 )
@@ -872,6 +832,8 @@ app.layout = html.Div(
 def render_tab_content(tab_switch, stopped_interval):
     if tab_switch == "tab1":
         return build_tab_1(), stopped_interval
+    
+    cpu.atualiza_info_cores()
     return (
         html.Div(
             id="status-container",
@@ -879,7 +841,8 @@ def render_tab_content(tab_switch, stopped_interval):
                 build_quick_stats_panel(),
                 html.Div(
                     id="graphs-container",
-                    children=[build_top_panel(stopped_interval), build_chart_panel()],
+                    #children=[build_top_panel(stopped_interval), build_chart_panel()],
+                    children=[build_top_panel(stopped_interval), build_bottom_panel(stopped_interval)],
                 ),
             ],
         ),
@@ -1084,26 +1047,23 @@ def show_current_specs(n_clicks, dd_select, store_data):
 
 
 # decorator for list of output
-def create_callback(param):
+def create_callback(index):
     def callback(interval, stored_data):
-        count, ooc_n, ooc_g_value, indicator = update_count(
-            interval, param, stored_data
-        )
-        spark_line_data = update_sparkline(interval, param)
-        return count, spark_line_data, ooc_n, ooc_g_value, indicator
+        cpu.atualiza_info_cores()
+        uso_atual, uso_atual_barra = update_count(interval, index, stored_data)
+        spark_line_data = update_sparkline(interval, index)
+        return spark_line_data, uso_atual, uso_atual_barra
 
     return callback
 
 
-for param in params[1:]:
-    update_param_row_function = create_callback(param)
+for index in range(cpu.qtd_cores):
+    update_param_row_function = create_callback(index)
     app.callback(
         output=[
-            Output(param + suffix_count, "children"),
-            Output(param + suffix_sparkline_graph, "extendData"),
-            Output(param + suffix_ooc_n, "children"),
-            Output(param + suffix_ooc_g, "value"),
-            Output(param + suffix_indicator, "color"),
+            Output(cpu.core_info[index][index] + suffix_sparkline_graph, "extendData"),
+            Output(cpu.core_info[index][index] + suffix_ooc_n, "children"),
+            Output(cpu.core_info[index][index] + suffix_ooc_g, "value"),
         ],
         inputs=[Input("interval-component", "n_intervals")],
         state=[State("value-setter-store", "data")],
@@ -1115,17 +1075,10 @@ for param in params[1:]:
     output=Output("control-chart-live", "figure"),
     inputs=[
         Input("interval-component", "n_intervals"),
-        Input(params[1] + suffix_button_id, "n_clicks"),
-        Input(params[2] + suffix_button_id, "n_clicks"),
-        Input(params[3] + suffix_button_id, "n_clicks"),
-        Input(params[4] + suffix_button_id, "n_clicks"),
-        Input(params[5] + suffix_button_id, "n_clicks"),
-        Input(params[6] + suffix_button_id, "n_clicks"),
-        Input(params[7] + suffix_button_id, "n_clicks"),
     ],
     state=[State("value-setter-store", "data"), State("control-chart-live", "figure")],
 )
-def update_control_chart(interval, n1, n2, n3, n4, n5, n6, n7, data, cur_fig):
+def update_control_chart(interval, data, cur_fig):
     # Find which one has been triggered
     ctx = dash.callback_context
 
@@ -1155,10 +1108,9 @@ def update_control_chart(interval, n1, n2, n3, n4, n5, n6, n7, data, cur_fig):
 @app.callback(
     output=Output("piechart", "figure"),
     inputs=[Input("interval-component", "n_intervals")],
-    state=[State("value-setter-store", "data")],
 )
-def update_piechart(interval, stored_data):
-    if interval == 0:
+def update_piechart(interval):
+    if(interval == 0):
         return {
             "data": [],
             "layout": {
@@ -1168,25 +1120,22 @@ def update_piechart(interval, stored_data):
             },
         }
 
-    if interval >= max_length:
-        total_count = max_length - 1
-    else:
-        total_count = interval - 1
-
+    labels = []
     values = []
     colors = []
-    for param in params[1:]:
-        ooc_param = (stored_data[param]["ooc"][total_count] * 100) + 1
-        values.append(ooc_param)
-        if ooc_param > 6:
-            colors.append("#f45060")
-        else:
-            colors.append("#91dfd2")
+    for device in storage.device_info:
+        labels.append(device['device'])
+        values.append(device['ocupado'])
+        colors.append('red')
+
+    labels.append('Livre')
+    values.append(round((storage.total - storage.ocupado), 2))
+    colors.append("green")
 
     new_figure = {
         "data": [
             {
-                "labels": params[1:],
+                "labels": labels,
                 "values": values,
                 "type": "pie",
                 "marker": {"colors": colors, "line": dict(color="white", width=2)},
@@ -1195,7 +1144,7 @@ def update_piechart(interval, stored_data):
             }
         ],
         "layout": {
-            "margin": dict(t=20, b=50),
+            "margin": dict(t=5, b=80),
             "uirevision": True,
             "font": {"color": "white"},
             "showlegend": False,
@@ -1209,4 +1158,4 @@ def update_piechart(interval, stored_data):
 
 # Running the server
 if __name__ == "__main__":
-    app.run_server(debug=True, port=8050)
+    app.run_server(debug=True, port=8030)
